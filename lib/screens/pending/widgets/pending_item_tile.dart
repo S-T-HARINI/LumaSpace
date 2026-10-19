@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/lift_container.dart';
 import '../../../data/models/media_item.dart';
+import '../../../providers/gallery_provider.dart';
 
 class PendingItemTile extends StatefulWidget {
   final MediaItem item;
@@ -32,6 +34,7 @@ class _PendingItemTileState extends State<PendingItemTile> {
   void initState() {
     super.initState();
     _loadThumbnail();
+    _checkSize();
   }
 
   @override
@@ -39,6 +42,17 @@ class _PendingItemTileState extends State<PendingItemTile> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.item.id != widget.item.id) {
       _loadThumbnail();
+      _checkSize();
+    }
+  }
+
+  void _checkSize() {
+    if (widget.item.size <= 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<GalleryProvider>().resolveItemSize(widget.item);
+        }
+      });
     }
   }
 
@@ -125,7 +139,7 @@ class _PendingItemTileState extends State<PendingItemTile> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${widget.item.shortDate}${widget.item.size > 0 ? " • ${widget.item.formattedSize}" : ""}',
+                  '${widget.item.shortDate}${widget.item.size > 0 ? " • ${widget.item.formattedSize}" : " • Size unavailable"}',
                   style: TextStyle(
                     color: colors.subtleText,
                     fontSize: 12,

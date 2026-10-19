@@ -26,8 +26,8 @@ class SettingsScreen extends StatelessWidget {
 
     final pendingItems = deletion.getPendingItems(gallery.displayedItems, review.pendingDeleteIds);
     final selectedPending = deletion.getSelectedPendingItems(gallery.displayedItems, review.pendingDeleteIds);
-    final totalBytes = deletion.calculateTotalSize(selectedPending);
-    final formattedSize = deletion.formatBytes(totalBytes);
+    final sizeSummary = deletion.calculateSizeSummary(selectedPending);
+    final formattedSize = deletion.formatSummarySize(sizeSummary);
 
     return Scaffold(
       appBar: AppBar(
@@ -86,7 +86,7 @@ class SettingsScreen extends StatelessWidget {
                 allItems: gallery.displayedItems,
                 keptCount: review.keptCount,
                 pendingCount: pendingItems.length,
-                pendingBytes: totalBytes,
+                pendingBytes: sizeSummary.totalBytes,
                 formattedPendingSize: formattedSize,
               );
             },

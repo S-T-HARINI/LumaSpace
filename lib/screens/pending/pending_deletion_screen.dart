@@ -94,9 +94,18 @@ class _PendingDeletionScreenState extends State<PendingDeletionScreen> {
 
     final pendingItems = deletion.getPendingItems(gallery.displayedItems, review.pendingDeleteIds);
     final selectedItems = deletion.getSelectedPendingItems(gallery.displayedItems, review.pendingDeleteIds);
-    final totalBytes = deletion.calculateTotalSize(selectedItems);
-    final formattedSize = deletion.formatBytes(totalBytes);
+    final sizeSummary = deletion.calculateSizeSummary(selectedItems);
+    final formattedSize = deletion.formatSummarySize(sizeSummary);
     final allSelected = pendingItems.isNotEmpty && selectedItems.length == pendingItems.length;
+
+    // Proactively resolve sizes for pending items if any metadata is unpopulated
+    if (pendingItems.any((i) => i.size <= 0)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          gallery.ensureItemSizes(pendingItems);
+        }
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -160,12 +169,20 @@ class _PendingDeletionScreenState extends State<PendingDeletionScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Reclaim ~$formattedSize',
+                              selectedItems.isEmpty
+                                  ? 'No items selected'
+                                  : (sizeSummary.allSizesUnknown
+                                      ? 'Reclaim: Size calculating...'
+                                      : 'Reclaim ~$formattedSize'),
                               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${selectedItems.length} of ${pendingItems.length} items will be removed',
+                              selectedItems.isEmpty
+                                  ? 'Select items below to reclaim space'
+                                  : (sizeSummary.hasUnknownSizes
+                                      ? '${selectedItems.length} of ${pendingItems.length} items selected (${sizeSummary.unknownCount} size pending)'
+                                      : '${selectedItems.length} of ${pendingItems.length} items will be removed'),
                               style: TextStyle(color: colors.subtleText, fontSize: 12.5),
                             ),
                           ],

@@ -132,23 +132,35 @@ class DeviceMediaService implements BaseMediaService {
         size: pageSize,
       );
 
-      final List<MediaItem> items = [];
-      for (final asset in assets) {
-        // Fast mapping with lazy size loading
-        items.add(
-          MediaItem(
+      final List<MediaItem> items = await Future.wait(
+        assets.map((asset) async {
+          int fileSize = 0;
+          try {
+            fileSize = await asset.fileSize;
+          } catch (_) {}
+
+          if (fileSize <= 0) {
+            try {
+              final origin = await asset.originFile ?? await asset.file;
+              if (origin != null && await origin.exists()) {
+                fileSize = await origin.length();
+              }
+            } catch (_) {}
+          }
+
+          return MediaItem(
             id: asset.id,
             title: asset.title ?? 'Media_${asset.id.substring(0, asset.id.length.clamp(0, 8))}',
             type: MediaItemType.fromAssetType(asset.type),
-            size: 0, // calculated or fetched on demand to avoid blocking main isolate
+            size: fileSize,
             createDateTime: asset.createDateTime,
             duration: asset.videoDuration,
             width: asset.width,
             height: asset.height,
             asset: asset,
-          ),
-        );
-      }
+          );
+        }),
+      );
       return items;
     } catch (e) {
       debugPrint('Error fetching media items: $e');

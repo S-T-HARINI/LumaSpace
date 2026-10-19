@@ -44,8 +44,7 @@ class MetadataSheet extends StatelessWidget {
             _buildDetailRow(context, 'Name', item.title, Icons.title_rounded),
             _buildDetailRow(context, 'Date', item.formattedDate, Icons.calendar_today_outlined),
             _buildDetailRow(context, 'Type', item.isVideo ? 'Video' : 'Photo', Icons.category_outlined),
-            if (item.size > 0)
-              _buildDetailRow(context, 'Size', item.formattedSize, Icons.data_usage_rounded),
+            _buildDetailRow(context, 'Size', item.size > 0 ? item.formattedSize : 'Size unavailable', Icons.data_usage_rounded),
             if (item.width > 0 && item.height > 0)
               _buildDetailRow(context, 'Dimensions', '${item.width} × ${item.height} px', Icons.aspect_ratio_rounded),
             if (item.isVideo && item.formattedDuration.isNotEmpty)

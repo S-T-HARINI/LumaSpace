@@ -89,5 +89,19 @@ void main() {
       expect(displayed.length, 2);
       expect(displayed.any((i) => i.id == 'item_old_small'), false);
     });
+
+    test('updateItemSize updates item size and notifies listeners', () {
+      galleryProvider.updateItemSize('item_old_small', 1024 * 1024 * 12); // changed from 500KB to 12MB
+      final updated = galleryProvider.displayedItems.firstWhere((i) => i.id == 'item_old_small');
+      expect(updated.size, 1024 * 1024 * 12);
+    });
+
+    test('MediaItem copyWith creates modified clone properly', () {
+      final original = sampleItems.first;
+      final modified = original.copyWith(size: 999999);
+      expect(modified.id, original.id);
+      expect(modified.title, original.title);
+      expect(modified.size, 999999);
+    });
   });
 }

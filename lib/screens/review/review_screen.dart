@@ -31,6 +31,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
     final unreviewed = review.getUnreviewedItems(gallery.displayedItems);
 
+    if (unreviewed.isNotEmpty && unreviewed.first.size <= 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          gallery.resolveItemSize(unreviewed.first);
+        }
+      });
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Review Media'),

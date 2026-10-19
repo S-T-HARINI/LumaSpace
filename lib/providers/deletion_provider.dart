@@ -29,6 +29,24 @@ class DeletionResult {
   });
 }
 
+class DeletionSizeSummary {
+  final int totalBytes;
+  final int knownCount;
+  final int unknownCount;
+  final int totalCount;
+
+  const DeletionSizeSummary({
+    required this.totalBytes,
+    required this.knownCount,
+    required this.unknownCount,
+    required this.totalCount,
+  });
+
+  bool get hasUnknownSizes => unknownCount > 0;
+  bool get allSizesUnknown => unknownCount == totalCount && totalCount > 0;
+  bool get isEmpty => totalCount == 0;
+}
+
 class DeletionProvider extends ChangeNotifier {
   final Set<String> _deselectedIds = {};
   bool _isProcessing = false;
@@ -73,10 +91,44 @@ class DeletionProvider extends ChangeNotifier {
     return getSelectedPendingItems(allItems, pendingIds).length;
   }
 
+  DeletionSizeSummary calculateSizeSummary(List<MediaItem> items) {
+    int totalBytes = 0;
+    int knownCount = 0;
+    int unknownCount = 0;
+
+    for (final item in items) {
+      if (item.size > 0) {
+        totalBytes += item.size;
+        knownCount++;
+      } else {
+        unknownCount++;
+      }
+    }
+
+    return DeletionSizeSummary(
+      totalBytes: totalBytes,
+      knownCount: knownCount,
+      unknownCount: unknownCount,
+      totalCount: items.length,
+    );
+  }
+
+  String formatSummarySize(DeletionSizeSummary summary) {
+    if (summary.isEmpty) return '0 B';
+    if (summary.allSizesUnknown) return 'Unknown size';
+    final formatted = formatBytes(summary.totalBytes);
+    if (summary.hasUnknownSizes) {
+      return '$formatted+';
+    }
+    return formatted;
+  }
+
   int calculateTotalSize(List<MediaItem> items) {
     int total = 0;
     for (final item in items) {
-      total += item.size;
+      if (item.size > 0) {
+        total += item.size;
+      }
     }
     return total;
   }

@@ -46,16 +46,75 @@ class MediaItem {
   bool get isVideo => type == MediaItemType.video;
   bool get isImage => type == MediaItemType.image;
 
+  MediaItem copyWith({
+    String? id,
+    String? title,
+    MediaItemType? type,
+    int? size,
+    DateTime? createDateTime,
+    Duration? duration,
+    int? width,
+    int? height,
+    AssetEntity? asset,
+    Uint8List? preloadedThumbnail,
+    File? localFile,
+  }) {
+    return MediaItem(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      type: type ?? this.type,
+      size: size ?? this.size,
+      createDateTime: createDateTime ?? this.createDateTime,
+      duration: duration ?? this.duration,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      asset: asset ?? this.asset,
+      preloadedThumbnail: preloadedThumbnail ?? this.preloadedThumbnail,
+      localFile: localFile ?? this.localFile,
+    );
+  }
+
+  /// Retrieve actual file size in bytes using platform metadata or origin file.
+  /// Does not load media bytes into memory.
+  Future<int> obtainActualSize() async {
+    if (size > 0) return size;
+    if (asset != null) {
+      try {
+        final queried = await asset!.fileSize;
+        if (queried > 0) return queried;
+      } catch (_) {}
+
+      try {
+        final f = await asset!.originFile ?? await asset!.file;
+        if (f != null && await f.exists()) {
+          final len = await f.length();
+          if (len > 0) return len;
+        }
+      } catch (_) {}
+    } else if (localFile != null) {
+      try {
+        if (await localFile!.exists()) {
+          return await localFile!.length();
+        }
+      } catch (_) {}
+    }
+    return 0;
+  }
+
   static Future<MediaItem> fromAsset(AssetEntity asset) async {
-    // Obtain file size safely without blocking main thread
+    // Fast metadata query first via platform cursor; fallback to file stat
     int fileSize = 0;
     try {
-      final originFile = await asset.originFile;
-      if (originFile != null && await originFile.exists()) {
-        fileSize = await originFile.length();
-      }
-    } catch (_) {
-      // Fallback if originFile is restricted
+      fileSize = await asset.fileSize;
+    } catch (_) {}
+
+    if (fileSize <= 0) {
+      try {
+        final originFile = await asset.originFile ?? await asset.file;
+        if (originFile != null && await originFile.exists()) {
+          fileSize = await originFile.length();
+        }
+      } catch (_) {}
     }
 
     return MediaItem(

@@ -219,6 +219,45 @@ class GalleryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateItemSize(String id, int size) {
+    final index = _rawItems.indexWhere((item) => item.id == id);
+    if (index != -1 && _rawItems[index].size != size) {
+      _rawItems[index] = _rawItems[index].copyWith(size: size);
+      notifyListeners();
+    }
+  }
+
+  Future<void> resolveItemSize(MediaItem item) async {
+    if (item.size > 0) return;
+    final actualSize = await item.obtainActualSize();
+    if (actualSize > 0) {
+      updateItemSize(item.id, actualSize);
+    }
+  }
+
+  Future<void> ensureItemSizes(List<MediaItem> items) async {
+    final missing = items.where((i) => i.size <= 0).toList();
+    if (missing.isEmpty) return;
+
+    bool updated = false;
+    await Future.wait(
+      missing.map((item) async {
+        final actualSize = await item.obtainActualSize();
+        if (actualSize > 0) {
+          final idx = _rawItems.indexWhere((r) => r.id == item.id);
+          if (idx != -1) {
+            _rawItems[idx] = _rawItems[idx].copyWith(size: actualSize);
+            updated = true;
+          }
+        }
+      }),
+    );
+
+    if (updated) {
+      notifyListeners();
+    }
+  }
+
   void clearMockDemoData() {
     _rawItems.clear();
     _isMockMode = false;
