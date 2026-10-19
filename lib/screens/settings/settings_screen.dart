@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/widgets/lift_container.dart';
 import '../../data/services/media_service.dart';
+import '../../data/services/mock_media_helper.dart';
 import '../../providers/deletion_provider.dart';
 import '../../providers/gallery_provider.dart';
 import '../../providers/review_provider.dart';
@@ -116,6 +117,64 @@ class SettingsScreen extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '${gallery.displayedItems.length} media indexed • ~$formattedSize pending',
+                        style: TextStyle(color: colors.subtleText, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: colors.subtleText),
+              ],
+            ),
+          ),
+          LiftContainer(
+            onTap: () async {
+              if (gallery.isMockMode) {
+                gallery.clearMockDemoData();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Exited demo mode. Restored real media state.')),
+                );
+              } else {
+                final mockItems = await MockMediaHelper.generateMockItems();
+                if (!context.mounted) return;
+                gallery.setMockItems(mockItems);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Loaded 8 mock media items for UI testing & inspection.')),
+                );
+              }
+            },
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            borderRadius: BorderRadius.circular(16),
+            color: theme.cardColor,
+            border: Border.all(color: colors.cardBorder),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: colors.warningColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    gallery.isMockMode ? Icons.check_circle_outline : Icons.science_outlined,
+                    color: colors.warningColor,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        gallery.isMockMode ? 'Exit Demo / Mock Mode' : 'Browser Audit Demo Mode',
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        gallery.isMockMode
+                            ? 'Currently displaying 8 labeled mock photos & videos'
+                            : 'Load mock media to inspect gestures & UI in browser',
                         style: TextStyle(color: colors.subtleText, fontSize: 13),
                       ),
                     ],

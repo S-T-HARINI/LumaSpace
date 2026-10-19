@@ -206,12 +206,22 @@ class GalleryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isMockMode = false;
+  bool get isMockMode => _isMockMode;
+
   // Inject items for testing
   void setMockItems(List<MediaItem> items) {
     _rawItems = List.of(items);
     _permissionStatus = AppPermissionStatus.granted;
     _isLoading = false;
     _hasMore = false;
+    _isMockMode = true;
     notifyListeners();
+  }
+
+  void clearMockDemoData() {
+    _rawItems.clear();
+    _isMockMode = false;
+    loadMedia(refresh: true);
   }
 }

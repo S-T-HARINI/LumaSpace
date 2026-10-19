@@ -5,11 +5,16 @@
 **GDG Tech Wildcard Entry — Mobile App Development**  
 A production-quality Smart Gallery and Media Organizer built with Flutter & Dart.
 
+[![Flutter](https://img.shields.io/badge/Flutter-3.47.7-blue.svg)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.13.5-blue.svg)](https://dart.dev)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web-green.svg)](https://github.com/S-T-HARINI/LumaSpace)
+[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
 ---
 
 ## 🌟 Overview & Problem Statement
 
-Modern mobile cameras and messaging apps produce gigabytes of photos and videos, quickly filling up device storage. Existing gallery apps make cleaning up tedious and risky:
+Modern mobile cameras and messaging apps produce gigabytes of photos and videos, quickly filling up device storage. Existing gallery apps make cleaning up tedious, stressful, and risky:
 1. **Accidental Deletions:** Single-tap or immediate deletions cause permanent loss of cherished memories.
 2. **Cluttered Browsing:** Users are overwhelmed by huge timelines with no intuitive way to review media one-by-one.
 3. **Heavy Memory Consumption:** Loading full-resolution media rapidly causes out-of-memory crashes and scrolling lag.
@@ -92,6 +97,7 @@ lib/
 │   │   └── review_action.dart # Action record for multi-step undo
 │   └── services/
 │       ├── media_service.dart # Platform media queries & Scoped Storage deletion
+│       ├── mock_media_helper.dart # UI demo & browser inspection mock generator
 │       └── preferences_service.dart # SharedPreferences persistence layer
 ├── providers/
 │   ├── deletion_provider.dart # Pending queue, deselection, size math & deletion
@@ -102,7 +108,7 @@ lib/
     ├── main_scaffold.dart     # IndexedStack bottom navigation (preserves state)
     ├── pending/               # Pending deletion queue & confirmation dialog
     ├── review/                # Swipe deck & review controls
-    ├── settings/              # Theme selector, storage overview & reset
+    ├── settings/              # Theme selector, demo mode, storage overview & reset
     └── viewer/                # Full-screen image zoom & video playback
 ```
 
@@ -133,7 +139,7 @@ lib/
 
 ---
 
-## 🧪 Testing & Verification
+## 🧪 Testing & Automated Verification
 
 LumaSpace includes comprehensive unit and widget tests covering all critical paths:
 
@@ -150,49 +156,122 @@ LumaSpace includes comprehensive unit and widget tests covering all critical pat
 ```bash
 flutter test
 ```
+*Result: 28/28 tests passed.*
 
 ### Running Analyzer
 ```bash
 flutter analyze
 ```
+*Result: No issues found! (0 warnings, 0 errors).*
 
 ---
 
-## 🚀 Building & Running
+## 📦 Android APK Builds & Download Options
 
-### Prerequisites
-- Flutter SDK 3.47+ (Dart 3.13+)
-- Android SDK 37 (or device with Android 9.0+)
+### Generated Build Artifacts
 
-### Run on Connected Device or Emulator
+| Build Type | Artifact Location | Description |
+|:---|:---|:---|
+| **Release APK** | `build/app/outputs/flutter-apk/app-release.apk` | Optimized for production release & installation. |
+| **Debug APK** | `build/app/outputs/flutter-apk/app-debug.apk` | Contains debugging symbols for fast development. |
+
+### How to Install the APK on Your Phone
+
+#### Method 1: Via USB using ADB (Recommended)
 ```bash
+# Connect phone via USB with USB Debugging enabled
+adb devices
+adb install -r build/app/outputs/flutter-apk/app-release.apk
+```
+
+#### Method 2: Direct File Transfer
+1. Connect your phone to your computer via USB (select "File Transfer / MTP" mode).
+2. Copy `build/app/outputs/flutter-apk/app-release.apk` to your phone's **Downloads** folder.
+3. On your phone, open your File Manager, tap the APK, and select **Install**.
+*(If prompted, allow "Install unknown apps" for your file manager).*
+
+#### Method 3: GitHub Releases
+Download the compiled APK directly from the GitHub repository release section:
+- Repository: [https://github.com/S-T-HARINI/LumaSpace](https://github.com/S-T-HARINI/LumaSpace)
+- Releases: [https://github.com/S-T-HARINI/LumaSpace/releases](https://github.com/S-T-HARINI/LumaSpace/releases)
+
+---
+
+## 📱 Physical Phone Testing & Verification Checklist
+
+Follow this checklist to test LumaSpace on your physical Android phone:
+
+### Step 1: Enable Developer Options & USB Debugging
+1. On your phone, open **Settings** > **About Phone**.
+2. Tap **Build Number** 7 times until you see *"You are now a developer!"*.
+3. Go back to **Settings** > **System** (or **Additional Settings**) > **Developer Options**.
+4. Enable **USB Debugging**.
+5. Connect your phone to the computer via USB.
+6. When prompted on your phone screen (*"Allow USB debugging?"*), check **Always allow from this computer** and tap **Allow**.
+
+### Step 2: Confirm Device Detection
+Run in your terminal (no Android Studio required):
+```bash
+flutter devices
+# Or:
+adb devices
+```
+*Your phone should appear in the device list as `device` (not `unauthorized` or `offline`).*
+
+### Step 3: Install & Launch LumaSpace
+```bash
+# Option A: Run directly in interactive debug mode with hot reload
 flutter run
+
+# Option B: Install the optimized release APK directly
+flutter run --release
+# Or via adb:
+adb install -r build/app/outputs/flutter-apk/app-release.apk
 ```
 
-### Build Android APK
-```bash
-flutter build apk --debug
-# Or for release:
-flutter build apk --release
-```
+### Step 4: Step-by-Step On-Device Verification
+
+| # | Action | Verification |
+|:---:|:---|:---|
+| 1 | **Grant Media Permissions** | App requests photo/video access on first launch. Tap **Allow All**. Verify real device photos and videos load into the gallery. |
+| 2 | **Test Gallery Grid** | Scroll through your photos and videos. Verify smooth scrolling and lazy-loaded thumbnails. |
+| 3 | **Test Albums & Filters** | Tap the album selector in the app bar; choose *Camera* or *Screenshots*. Filter by *Videos* or *Large Files*. |
+| 4 | **Test Full-Screen Viewer** | Tap a photo: pinch to zoom, double-tap zoom. Tap a video: verify hardware playback and scrubbing. |
+| 5 | **Test Swipe Review** | Navigate to the **Review** tab: swipe a card right (Keep), swipe another card left (Mark for deletion). Notice the tactile lift and haptic feedback. |
+| 6 | **Test Multi-Step Undo** | Tap the Undo button twice in the Review tab. Verify items return to the review deck in reverse order. |
+| 7 | **Review Pending Deletions** | Switch to the **Pending** tab: verify pending count badge, item thumbnails, and total size calculation. |
+| 8 | **Test Deselection Safety** | Uncheck one item. Notice the total reclaimable size dynamically updates while the file remains untouched. |
+| 9 | **Test Native Deletion** | Tap **Delete Selected**. Verify the LumaSpace confirmation modal appears. Tap Proceed. Verify Android's native Scoped Storage dialog (`MediaStore.createDeleteRequest`) appears. |
+| 10 | **Test Cancellation Safety** | In the Android system dialog, tap **Deny/Cancel**. Verify LumaSpace detects the cancellation and preserves your files. |
+| 11 | **Test Complete Deletion** | Select an unwanted test photo, tap Delete, and tap **Allow** in Android's system dialog. Verify the file is safely deleted from your phone. |
+| 12 | **Test Theme Adaptation** | Go to **Settings** > **Theme** > Switch between all 7 themes (Google Light, Google Dark, Graphite, Sage, Sand, Rose, Ocean) and System mode. |
 
 ---
 
-## 📋 Demonstration Checklist
+## 🌐 Web Browser Inspection & Mock Demo Mode
 
-| Step | Feature Tested | Expected Result |
-|:---:|:---|:---|
-| 1 | **Launch Application** | App opens with Google Light / System mode, loads device media smoothly. |
-| 2 | **Gallery Browsing** | Photos and videos render in responsive grid with video duration pills. |
-| 3 | **Full-Screen Viewer** | Tap a photo to pinch/double-tap zoom; tap a video to play/pause and seek. |
-| 4 | **Sorting & Filtering** | Change sort to "Largest First" and filter by "Videos" — grid updates instantly. |
-| 5 | **Swipe Review: Keep** | Swipe card right — green "KEEP" badge shows, item moves to Kept list. |
-| 6 | **Swipe Review: Delete** | Swipe card left — red "DELETE" badge shows, item moves to Pending Deletion. |
-| 7 | **Undo Action** | Tap the Undo button — most recent reviewed item returns to the queue. |
-| 8 | **Pending Deletion Screen** | Badge shows pending count; screen displays thumbnails and total reclaimable size. |
-| 9 | **Deselection Safety** | Uncheck an item — reclaimable size decreases, item remains on device. |
-| 10 | **Deletion Confirmation** | Tap "Delete Selected" — modal dialog shows count, size, and system safety warning. |
-| 11 | **Platform Deletion** | Confirm deletion — Android MediaStore dialog prompts user. On cancel, file is preserved; on approval, file is deleted and state updates. |
-| 12 | **Theme Switching** | Open Settings -> Theme -> Switch to *Sage*, *Ocean*, or *Graphite* — whole UI adapts immediately. |
-| 13 | **System Mode** | Select System mode — app follows OS light/dark appearance. |
-| 14 | **Review Session Reset** | Tap "Reset Review Progress" in Settings — clears markings safely without deleting files. |
+LumaSpace also supports Flutter Web for rapid UI inspection and presentation:
+
+### Run in Browser
+```bash
+flutter run -d chrome
+```
+*Or build the web distribution:*
+```bash
+flutter build web
+```
+
+### Mock Demo Mode
+Because web browsers run in a strict security sandbox without access to native Android media APIs (`photo_manager`), LumaSpace includes a built-in **Mock Demo Mode**:
+1. Open the app in a web browser.
+2. An informative banner alerts the reviewer that the browser environment uses the Mock Demo engine.
+3. Open **Settings** > tap **Mock Demo Data** to populate the app with 8 high-resolution simulated photos and videos (with memory-backed thumbnails).
+4. Review, swipe, undo, filter, sort, and inspect themes directly in Chrome/Edge without needing a physical phone connected.
+
+---
+
+## ⚠️ Known Limitations & Platform Differences
+
+1. **Web Platform Limitation:** Browsers do not possess native mobile file system access or Android `MediaStore`. Full real-device media access and hardware deletion require an Android or iOS device. Browser mode uses the built-in Mock Demo engine.
+2. **Android Scoped Storage Deletion:** On Android 11+ (API 30+), deleting media items belonging to other applications triggers an OS-level confirmation modal required by Google security guidelines. This is intentional and guarantees user safety.
+3. **NDK Stripping Warning:** Debug builds may show an NDK `llvm-strip` warning if NDK build tools are partially installed on Windows; this does not affect functionality or release APK builds.

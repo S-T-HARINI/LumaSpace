@@ -6,6 +6,7 @@ import '../../core/widgets/error_state_view.dart';
 import '../../core/widgets/lift_container.dart';
 import '../../core/widgets/loading_view.dart';
 import '../../data/services/media_service.dart';
+import '../../data/services/mock_media_helper.dart';
 import '../../providers/gallery_provider.dart';
 import '../../providers/review_provider.dart';
 import '../viewer/full_screen_viewer.dart';
@@ -117,6 +118,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
   }
 
   Widget _buildBody(BuildContext context, GalleryProvider gallery, ReviewProvider review) {
+    final colors = context.appColors;
     // Permission Handling
     if (!gallery.permissionStatus.hasAccess) {
       if (gallery.permissionStatus == AppPermissionStatus.denied ||
@@ -166,6 +168,32 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
     return Column(
       children: [
+        if (gallery.isMockMode)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: colors.warningColor.withValues(alpha: 0.15),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 16, color: colors.warningColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Demo Mode (Mock data for browser inspection & UI testing)',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: context.theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => gallery.clearMockDemoData(),
+                  child: const Text('Exit Demo'),
+                ),
+              ],
+            ),
+          ),
         GalleryFilterBar(
           selectedOption: gallery.filterOption,
           onSelect: (option) => gallery.setFilterOption(option),
@@ -265,6 +293,15 @@ class _GalleryScreenState extends State<GalleryScreen> {
               icon: const Icon(Icons.check_circle_outline, size: 20),
               label: const Text('Grant Media Permission'),
             ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () async {
+                final mockItems = await MockMediaHelper.generateMockItems();
+                gallery.setMockItems(mockItems);
+              },
+              icon: const Icon(Icons.preview_rounded, size: 18),
+              label: const Text('Try Demo Mode (Mock Media)'),
+            ),
           ],
         ),
       ),
@@ -313,6 +350,15 @@ class _GalleryScreenState extends State<GalleryScreen> {
               onPressed: () => gallery.openAppSettings(),
               icon: const Icon(Icons.settings_outlined, size: 20),
               label: const Text('Open App Settings'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () async {
+                final mockItems = await MockMediaHelper.generateMockItems();
+                gallery.setMockItems(mockItems);
+              },
+              icon: const Icon(Icons.preview_rounded, size: 18),
+              label: const Text('Try Demo Mode (Mock Media)'),
             ),
             const SizedBox(height: 12),
             TextButton(
