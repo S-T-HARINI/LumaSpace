@@ -5,37 +5,62 @@
 **GDG Tech Wildcard Entry — Mobile App Development**  
 A production-quality Smart Gallery and Media Organizer built with Flutter & Dart.
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.47.7-blue.svg)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.13.5-blue.svg)](https://dart.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47.7-02569B.svg?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.13.5-0175C2.svg?logo=dart&logoColor=white)](https://dart.dev)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web-green.svg)](https://github.com/S-T-HARINI/LumaSpace)
+[![Tests](https://img.shields.io/badge/Automated%20Tests-39%2F39%20Passing-brightgreen.svg)](test/)
+[![Analysis](https://img.shields.io/badge/flutter%20analyze-0%20issues-brightgreen.svg)](lib/)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
+---
+
+## 📥 Download Android APK
+
+> [!IMPORTANT]
+> ### Reviewer Quick Access & Direct Downloads
+> - 🚀 **[Direct Download: app-arm64-v8a-release.apk (166 MB)](https://github.com/S-T-HARINI/LumaSpace/releases/download/v1.0.0/app-arm64-v8a-release.apk)**  
+>   *(Optimized for modern 64-bit Android devices, including Samsung Galaxy M36 running Android 16)*
+> - 📦 **[View GitHub Release v1.0.0 (All Assets & Release Notes)](https://github.com/S-T-HARINI/LumaSpace/releases/tag/v1.0.0)**
+> - 📁 **Alternative Google Drive Demo Video / Backup:** *[Google Drive Demo Video / Mirror](https://github.com/S-T-HARINI/LumaSpace/releases)*
+> 
+> **Installation Instructions for Reviewers:**
+> 1. Download the APK directly onto your Android device or sideload via ADB (`adb install -r app-arm64-v8a-release.apk`).
+> 2. When prompted by Android, allow *"Install unknown apps"* for your browser or file manager.
+> 3. Launch **LumaSpace** and tap **Allow** when prompted for media permissions to index your on-device gallery.
+> 4. *(Local clone notice)* If you have cloned this repository locally, the compiled production release APKs are located in `build/app/outputs/flutter-apk/`.
 
 ---
 
 ## 🌟 Overview & Problem Statement
 
-Modern mobile cameras and messaging apps produce gigabytes of photos and videos, quickly filling up device storage. Existing gallery apps make cleaning up tedious, stressful, and risky:
+Modern mobile cameras and messaging apps produce gigabytes of photos and videos, quickly exhausting device storage. Existing gallery apps make cleaning up tedious, stressful, and risky:
 1. **Accidental Deletions:** Single-tap or immediate deletions cause permanent loss of cherished memories.
-2. **Cluttered Browsing:** Users are overwhelmed by huge timelines with no intuitive way to review media one-by-one.
-3. **Heavy Memory Consumption:** Loading full-resolution media rapidly causes out-of-memory crashes and scrolling lag.
+2. **Cluttered Browsing:** Users are overwhelmed by massive timelines without an intuitive way to review media one by one.
+3. **Heavy Memory Footprint:** Loading full-resolution media rapidly causes out-of-memory crashes and stuttering frame rates.
+4. **Uncertain Reversible Deletion:** Generic cleanup utilities either delete files without native OS protection or falsely report space reclaimed when users cancel system confirmation prompts.
 
 ### The LumaSpace Solution
 **LumaSpace** transforms photo management into a serene, tactile, and completely safe experience:
 - **Real Device Media Browsing:** High-performance, lazy-loaded photo and video gallery indexed directly from device storage.
+- **Date & Month Grouping Mode:** Optional chronological grouping by calendar month or specific date with sticky headers and item counts.
 - **Swipe-Based Review Engine:** Review photos and videos with intuitive gestures — swipe right to keep, swipe left to mark for deletion.
-- **Multi-Level Undo & Session Persistence:** Every review decision is recorded and can be reversed one-by-one or in sequence. Review progress survives app restarts.
+- **Multi-Level Undo & Session History:** Every review decision is recorded and can be reversed one-by-one or in sequence. Review progress survives app restarts.
 - **Safe, Reversible Deletion Workflow:** Swiping never deletes files. Items marked for deletion are staged in a dedicated Pending Deletion queue where users can deselect, restore, or confirm with the native operating system.
-- **Platform-Native Deletion:** Fully compliant with Android Scoped Storage (`MediaStore.createDeleteRequest`) and iOS Photo Library deletion dialogs. Zero false success reporting if the user cancels.
+- **Dynamic Byte Reclamation Calculation:** Real-time calculation of reclaimable storage across B, KB, MB, and GB, updating immediately upon selection or deselection.
+- **Android Scoped Storage Reconciliation:** Fully compliant with Android Scoped Storage (`MediaStore.createDeleteRequest`). If the user cancels the OS deletion prompt, files remain completely intact in storage and remain staged in Pending Deletion without false success reporting.
+- **Duplicate Candidate Detection:** Smart discovery of duplicate photos and videos based on matching file sizes, dimensions, and media duration without reading heavy byte streams into memory.
+- **Storage Overview Sheet:** Clear breakdown of indexed photos, videos, total storage size, and pending reclaimable space.
 - **Seven Curated Themes + System Mode:** Polished Material 3 design with 7 distinct palettes and automatic system dark/light adaptation.
 - **Tactile Lift Effects:** Subtle pressed-state elevation and scaling across cards, thumbnails, buttons, and navigation without slowing down interactions.
 
 ---
 
-## 📱 Key Features
+## 📱 Key Features & Capabilities
 
 ### 1. Device Media Gallery
-- **Real Photos & Videos:** Connects directly to device media via platform APIs.
-- **Virtualization & Pagination:** Lazy loading (80 items/batch) with thumbnail decoding cache (up to 250 in-memory items) prevents isolate blocking.
+- **Real Photos & Videos:** Connects directly to device media via platform APIs (`photo_manager`).
+- **Virtualization & Pagination:** Lazy loading in batches of 80 items with an in-memory thumbnail decoding cache (up to 250 items) prevents isolate blocking.
+- **Grouping Modes:** Toggle between **No Grouping**, **Group by Month** (e.g., *"October 2026"*), and **Group by Date** (e.g., *"19 October 2026"*). Invalid or missing dates are gracefully grouped under *"Unknown Date"*.
 - **Album Switching:** Browse All Media or filter by specific device folders (Camera, Screenshots, Downloads, WhatsApp, etc.).
 - **Sorting Options:** Newest First, Oldest First, Largest First, and Smallest First.
 - **Smart Filtering:** All Media, Photos Only, Videos Only, and Large Files (>10 MB).
@@ -43,25 +68,33 @@ Modern mobile cameras and messaging apps produce gigabytes of photos and videos,
 
 ### 2. Full-Screen Media Viewer
 - **Interactive Image Zoom & Pan:** Smooth pinch-to-zoom (up to 4.5x) and animated double-tap zoom.
-- **Integrated Video Player:** Hardware-accelerated video playback with play/pause controls, progress scrubber, and timestamp feedback.
-- **Metadata Inspector:** Bottom sheet detailing filename, date, dimensions, file size, duration, and media type.
+- **Integrated Video Player:** Hardware-accelerated video playback with play/pause controls, progress scrubber, and timestamp feedback (`video_player`).
+- **Metadata Inspector:** Bottom sheet detailing filename, date, dimensions, file size (B, KB, MB, GB), duration, and media type.
 - **Unified Review Action Bar:** Mark as Kept or Pending Deletion directly while browsing full screen.
 
 ### 3. Swipe-Review Engine
 - **Gesture Physics:** Smooth card rotation and translation responsive to touch drag.
 - **Visual & Haptic Cues:** Dynamic "KEEP" (green) and "DELETE" (red) badges fade in with drag distance; tactile haptic pulse triggers when crossing the decision threshold.
 - **Deck Preview:** Subtle card preview beneath the active item provides visual continuity.
-- **Accessible Alternatives:** Dedicated on-screen buttons for Keep, Delete, Info, and Undo ensure complete accessibility.
+- **Accessible Controls:** Dedicated on-screen buttons for Keep, Delete, Info, and Undo ensure complete accessibility.
 - **Completion Summary:** Displays review session accomplishments with quick navigation to Pending Deletion.
 
-### 4. Safe Pending Deletion & Platform Deletion
+### 4. Safe Pending Deletion & Scoped Storage
 - **Reversible Staging:** Files remain safe on the device until explicit system confirmation.
 - **Individual Deselection:** Deselect specific files to keep them without losing the rest of the pending queue.
-- **Size Reclamation Calculation:** Accurately totals file sizes and estimates reclaimed storage.
+- **Dynamic Size Reclamation:** Accurately totals file sizes in bytes and estimates reclaimed storage formatted across B, KB, MB, and GB.
 - **Confirmation Dialog:** Warns user before invoking the operating system deletion prompt.
 - **Platform Reconciliation:** Listens to the platform-reported result. If the user cancels the Android Scoped Storage prompt, files are preserved and never falsely marked deleted.
 
-### 5. Seven Themes + System Mode
+### 5. Duplicate Candidate Detection *(Bonus Feature)*
+- **Smart Grouping:** Identifies duplicate photos and videos sharing identical byte sizes, image dimensions, and video durations.
+- **Memory-Efficient:** Evaluates metadata without reading heavy file streams into RAM.
+- **One-Tap Staging:** Preview duplicate groups and stage extra copies directly into the Pending Deletion queue for safe review.
+
+### 6. Storage Overview Sheet *(Bonus Feature)*
+- **Comprehensive Storage Stats:** Accessible from Settings, displaying total photos indexed, total videos indexed, combined storage usage, and pending reclaimable space.
+
+### 7. Seven Themes + System Mode
 - **Google Light:** Clean white surfaces with Google blue accent (`#1A73E8`).
 - **Google Dark:** Deep neutral dark surfaces with soft blue accent (`#8AB4F8`).
 - **Graphite:** Sophisticated monochrome charcoal and zinc gray palette.
@@ -74,9 +107,60 @@ Modern mobile cameras and messaging apps produce gigabytes of photos and videos,
 
 ---
 
+## 🛠 Framework & Technology Stack
+
+| Component | Technology / Version | Role in LumaSpace |
+|:---|:---|:---|
+| **Framework** | **Flutter 3.47.7** (Channel stable) | Cross-platform UI toolkit and runtime |
+| **Language** | **Dart 3.13.5** | Strongly typed, null-safe application logic |
+| **State Management** | **Provider ^6.1.5+1** | Decoupled reactive state management (`GalleryProvider`, `ReviewProvider`, `DeletionProvider`, `ThemeProvider`) |
+| **Media Discovery** | **photo_manager ^3.12.0** | Device media querying, paging, thumbnail decoding, Scoped Storage deletion |
+| **Video Playback** | **video_player ^2.14.1** | Hardware-accelerated video decoding with seek scrubber |
+| **Persistence** | **shared_preferences ^2.5.6** | Persisting theme choices and review classifications |
+| **Android Integration**| **shared_preferences_android 2.4.17** | Native Android platform storage implementation |
+| **Localization & Dates**| **intl ^0.20.3** | Date/month formatting for gallery grouping headers and metadata |
+| **UI Icons** | **cupertino_icons ^1.0.8** & Material Icons | Platform-adaptive iconography |
+| **Code Quality** | **flutter_lints ^6.0.0** | Strict static analysis adhering to Flutter best practices |
+
+### Android Platform Requirements
+- **Minimum SDK:** API 21 (Android 5.0 Lollipop)
+- **Target & Compile SDK:** API 34 / 35 (Android 14 / 15)
+- **Tested & Verified Device:** Samsung Galaxy M36 running Android 16
+- **Supported Architectures (ABIs):**
+  - `arm64-v8a` — Modern 64-bit mobile processors (recommended)
+  - `armeabi-v7a` — 32-bit mobile devices
+  - `x86_64` — 64-bit Android Studio emulators
+
+---
+
+## 🔒 Permissions & Security Architecture
+
+LumaSpace respects user privacy and strictly limits permission requests to media indexing and storage management.
+
+### Permission Breakdown
+
+| Permission | Android Version | Purpose in LumaSpace |
+|:---|:---|:---|
+| `android.permission.READ_MEDIA_IMAGES` | Android 13+ (API 33+) | Queries photos on modern Android without broad storage permission. |
+| `android.permission.READ_MEDIA_VIDEO` | Android 13+ (API 33+) | Queries videos on modern Android without broad storage permission. |
+| `android.permission.READ_MEDIA_AUDIO` | Android 13+ (API 33+) | Complies with platform media engine audio requirements. |
+| `android.permission.READ_EXTERNAL_STORAGE` | Android 5.0–12 (API 21–32) | Backwards-compatible photo and video access for legacy Android. |
+| `android.permission.WRITE_EXTERNAL_STORAGE`| Android 5.0–9 (API 21–29) | Backwards-compatible file modification on legacy Android devices. |
+| `android.permission.ACCESS_MEDIA_LOCATION` | Android 10+ (API 29+) | Reads EXIF geolocation metadata to display photo location details in the metadata inspector. |
+
+### Graceful Permission Handling & Denied Recovery
+LumaSpace never crashes or leaves the user on a blank screen if permissions are denied:
+1. **Interactive Prompt:** On first launch, the app gracefully requests media access via `photo_manager`.
+2. **Dedicated Recovery Screen:** If the user denies or restricts permissions, the gallery displays an informative fallback UI offering three clear options:
+   - **Grant Media Permission:** Re-triggers the permission request flow.
+   - **Open App Settings:** Directly launches Android's app settings page for LumaSpace so the user can enable permissions manually.
+   - **Try Demo Mode (Mock Media):** Instantly populates the app with 8 high-resolution mock photos and videos, allowing full evaluation of all features without granting storage permissions.
+
+---
+
 ## 🏗 Architecture & Code Structure
 
-LumaSpace follows a clean, decoupled architecture:
+LumaSpace follows a clean, decoupled architecture separating presentation, business logic, and platform services:
 
 ```
 lib/
@@ -84,7 +168,7 @@ lib/
 │   ├── constants/             # Strings, dimensions, animation constants
 │   ├── theme/
 │   │   ├── app_theme.dart     # 7 theme definitions + AppThemeColors extension
-│   │   └── theme_provider.dart# Dynamic theme switching & persistence
+│   │   └── theme_provider.dart# Dynamic theme switching & SharedPreferences persistence
 │   └── widgets/
 │       ├── badge_chip.dart    # Filter pills & count chips
 │       ├── empty_state_view.dart# Clean empty state presentations
@@ -93,20 +177,22 @@ lib/
 │       └── loading_view.dart  # Minimal progress indicators
 ├── data/
 │   ├── models/
-│   │   ├── media_item.dart    # Unified photo/video model with thumbnail caching
+│   │   ├── media_item.dart    # Unified photo/video model with thumbnail caching & size formatting
 │   │   └── review_action.dart # Action record for multi-step undo
 │   └── services/
+│       ├── duplicate_detection_service.dart # Duplicate discovery by size, dimension & duration
 │       ├── media_service.dart # Platform media queries & Scoped Storage deletion
 │       ├── mock_media_helper.dart # UI demo & browser inspection mock generator
 │       └── preferences_service.dart # SharedPreferences persistence layer
 ├── providers/
-│   ├── deletion_provider.dart # Pending queue, deselection, size math & deletion
-│   ├── gallery_provider.dart  # Media loading, pagination, sorting & filtering
+│   ├── deletion_provider.dart # Pending queue, deselection, size math & deletion reconciliation
+│   ├── gallery_provider.dart  # Media loading, pagination, sorting, filtering & grouping
 │   └── review_provider.dart   # Keep/delete classifications, undo & history
 └── screens/
-    ├── gallery/               # Gallery grid, album selector & sort sheets
-    ├── main_scaffold.dart     # IndexedStack bottom navigation (preserves state)
-    ├── pending/               # Pending deletion queue & confirmation dialog
+    ├── duplicates/            # Duplicate candidate review & staging screen
+    ├── gallery/               # Gallery grid, album selector, grouping & sort sheets
+    ├── main_scaffold.dart     # IndexedStack bottom navigation (preserves tab state)
+    ├── pending/               # Pending deletion queue, deselection & confirmation dialog
     ├── review/                # Swipe deck & review controls
     ├── settings/              # Theme selector, demo mode, storage overview & reset
     └── viewer/                # Full-screen image zoom & video playback
@@ -116,162 +202,149 @@ lib/
 
 ## ⚡ Performance Strategy for Large Media Libraries
 
-1. **Lazy Grid Virtualization:** Uses `GridView.builder` and `ListView.builder` to instantiate only visible tiles.
-2. **Incremental Device Queries:** Queries media in batches of 80 items instead of loading the entire device index into RAM.
-3. **Bounded Thumbnail Cache:** Maintains an in-memory thumbnail cache capped at 250 items with automatic eviction, ensuring memory stability even with libraries of 10,000+ photos.
-4. **Thumbnail Downscaling:** Thumbnails are decoded at $256 \times 256$ with 75% quality rather than loading raw 12–48 MP camera images into memory.
-5. **On-Demand Controller Lifecycle:** Video controllers and high-resolution image viewers are initialized only upon opening full-screen view and properly disposed of upon exit.
-6. **State Preservation via IndexedStack:** Switching tabs does not trigger re-queries or reset review card positions.
+LumaSpace is engineered to handle libraries containing tens of thousands of media files smoothly without frame drops or high memory usage:
+
+1. **Lazy Grid Virtualization:** Uses `CustomScrollView` with `SliverGrid` and `SliverList` to render only items currently visible in the viewport.
+2. **Incremental Batch Queries:** Media assets are queried from `MediaStore` in small batches of 80 items instead of loading the entire device index into RAM.
+3. **Bounded Thumbnail Cache:** Maintains an in-memory thumbnail cache capped at 250 items with automatic FIFO eviction, preventing out-of-memory errors on memory-constrained devices.
+4. **Thumbnail Downscaling:** Thumbnails are decoded natively at $256 \times 256$ pixels with 75% quality rather than decoding full 12–50 MP camera images into memory.
+5. **On-Demand Controller Lifecycle:** `VideoPlayerController` instances are initialized strictly when opening the full-screen viewer and disposed immediately upon exit.
+6. **State Preservation via IndexedStack:** Switching between Gallery, Review, Pending, and Settings retains scroll position and card state without re-querying the database.
+7. **Efficient Duplicate Grouping:** Duplicate candidate discovery evaluates metadata fields (file size in bytes, width, height, duration) without reading byte content into memory.
 
 ---
 
-## 🔒 Permissions & Platform Security
+## 🧪 Automated Verification & Test Results
 
-### Android
-- **Android 13+ (API 33+):** Requires `android.permission.READ_MEDIA_IMAGES` and `android.permission.READ_MEDIA_VIDEO`.
-- **Android 10–12 (API 29–32):** Uses `READ_EXTERNAL_STORAGE` and `WRITE_EXTERNAL_STORAGE`.
-- **Scoped Storage:** Deletions invoke `PhotoManager.editor.deleteWithIds()`, which natively triggers Android's `MediaStore.createDeleteRequest` system confirmation modal.
+The repository includes a comprehensive automated test suite verifying business logic, edge cases, state transitions, and UI widgets:
 
-### iOS
-- Configured in `Info.plist`:
-  - `NSPhotoLibraryUsageDescription`: Explains media access purpose.
-  - `NSPhotoLibraryAddUsageDescription`: Allows photo library management.
-
----
-
-## 🧪 Testing & Automated Verification
-
-LumaSpace includes comprehensive unit and widget tests covering all critical paths:
-
-- **Review State Transitions:** Verifies `markKeep`, `markPendingDelete`, and transitioning between states.
-- **Multi-Level Undo:** Tests single and consecutive undo operations across history.
-- **Pending Deletion Logic:** Verifies deselection, calculation of total bytes, and format conversions.
-- **Platform Deletion Outcomes:** Simulates successful platform deletion, partial deletion, and user cancellation.
-- **Gallery Sorting & Filtering:** Validates Date (Asc/Desc), Size (Asc/Desc), and filters (Photos, Videos, Large Files).
-- **Theme System:** Verifies all 7 theme presets, color extensions, and system brightness adaptation.
-- **Widget Navigation:** Verifies `MainScaffold` tab switching and state preservation.
-- **Deletion Confirmation:** Tests modal warning dialog and confirmed callback execution.
-
-### Running Tests
-```bash
-flutter test
-```
-*Result: 28/28 tests passed.*
-
-### Running Analyzer
 ```bash
 flutter analyze
 ```
-*Result: No issues found! (0 warnings, 0 errors).*
+> **Result:** `No issues found! (0 warnings, 0 errors)`
+
+```bash
+flutter test
+```
+> **Result:** `All 39 tests passed!`
+
+### Test Breakdown by Domain
+
+| Test Suite | File | Tests | Validated Behavior |
+|:---|:---|:---:|:---|
+| **Deletion Provider** | `test/unit/deletion_provider_test.dart` | 8 | Default selection, selective deselection, dynamic byte summation, byte-to-human formatting (B, KB, MB, GB), partial size estimation, select/deselect all, full deletion success, Scoped Storage cancellation reconciliation. |
+| **Duplicate Detection**| `test/unit/duplicate_detection_test.dart` | 4 | Duplicate grouping by size/dimensions/duration, non-duplicate filtering, sorting groups by potential space savings descending. |
+| **Gallery Provider** | `test/unit/gallery_provider_test.dart` | 12 | Initial sort order, date sort (Asc/Desc), size sort (Asc/Desc), photo/video/large file filtering, thumbnail size updates, `copyWith` immutability, month grouping, date grouping, unknown date fallback. |
+| **Review Provider** | `test/unit/review_provider_test.dart` | 9 | Initial empty state, keep transitions, pending delete transitions, reversible state switching, single undo, multi-step consecutive undo, unreviewed item filtering, restoring from pending, full reset. |
+| **Theme System** | `test/unit/theme_test.dart` | 3 | All 7 distinct theme definitions, system brightness adaptation, theme persistence via provider. |
+| **Confirmation Dialog**| `test/widget/confirmation_dialog_test.dart` | 1 | Modal rendering of file count, total size calculation, and execution of confirmed callback. |
+| **Navigation Scaffold**| `test/widget/navigation_test.dart` | 2 | Bottom navigation bar destinations, tab switching, and view hierarchy preservation. |
 
 ---
 
-## 📦 Android APK Builds & Download Options
+## 📋 Step-by-Step Manual Reviewer Test Checklist
 
-### Generated Build Artifacts
+Reviewers can verify all functionality on a physical Android device (e.g., Samsung Galaxy M36 running Android 16) by following this walkthrough:
 
-| Build Type | Artifact Location | Description |
-|:---|:---|:---|
-| **Release APK** | `build/app/outputs/flutter-apk/app-release.apk` | Optimized for production release & installation. |
-| **Debug APK** | `build/app/outputs/flutter-apk/app-debug.apk` | Contains debugging symbols for fast development. |
-
-### How to Install the APK on Your Phone
-
-#### Method 1: Via USB using ADB (Recommended)
-```bash
-# Connect phone via USB with USB Debugging enabled
-adb devices
-adb install -r build/app/outputs/flutter-apk/app-release.apk
-```
-
-#### Method 2: Direct File Transfer
-1. Connect your phone to your computer via USB (select "File Transfer / MTP" mode).
-2. Copy `build/app/outputs/flutter-apk/app-release.apk` to your phone's **Downloads** folder.
-3. On your phone, open your File Manager, tap the APK, and select **Install**.
-*(If prompted, allow "Install unknown apps" for your file manager).*
-
-#### Method 3: GitHub Releases
-Download the compiled APK directly from the GitHub repository release section:
-- Repository: [https://github.com/S-T-HARINI/LumaSpace](https://github.com/S-T-HARINI/LumaSpace)
-- Releases: [https://github.com/S-T-HARINI/LumaSpace/releases](https://github.com/S-T-HARINI/LumaSpace/releases)
+| # | Step / Action | Verification Checklist | Expected Behavior |
+|:---:|:---|:---|:---|
+| **1** | **Launch & Grant Permissions** | Launch LumaSpace for the first time. | Permission dialog appears. Tap **Allow All**. Real device photos and videos populate the gallery grid smoothly. |
+| **2** | **Gallery Browsing** | Fast scroll through the gallery grid. | Smooth 60/120 FPS scrolling with lazy-loaded thumbnails. Video items display duration overlay badges. |
+| **3** | **Date / Month Grouping** | Tap the Grouping icon in the top app bar. Select **Group by Month**, then **Group by Date**. | Gallery smoothly reorganizes into chronological sections with sticky headers (e.g., *"October 2026"*) and item count badges. |
+| **4** | **Albums & Filtering** | Tap the album selector dropdown; select an album (e.g. *Screenshots*). Tap the filter pills (*Videos*, *Large Files*). | Grid updates instantly to display only matching media from the selected album. |
+| **5** | **Full-Screen Viewer** | Tap a photo to enter full screen. Pinch to zoom and double-tap zoom. Tap a video to test playback. Tap the **Info** button. | Pinch zoom zooms up to 4.5x. Video scrubber allows seeking with live timestamps. Metadata sheet displays filename, date, dimensions, file size, and duration. |
+| **6** | **Swipe Review** | Navigate to the **Review** tab. Drag a card right (Keep). Drag another card left (Mark for deletion). | Green "KEEP" and red "DELETE" badges fade in with drag distance. A tactile haptic pulse triggers when crossing the threshold. Card smoothly dismisses. |
+| **7** | **Multi-Step Undo** | Tap the **Undo** button in the review controls bar twice. | Previously reviewed cards reappear in the review deck in reverse order, restoring their unreviewed state. |
+| **8** | **Storage Overview & Duplicates** | Navigate to **Settings** > tap **Storage Overview**. Then tap **Find Duplicates**. | Storage overview sheet displays accurate photo/video counts and total size. Duplicate detector lists duplicate candidate groups sorted by space savings. |
+| **9** | **Pending Deletion Review** | Switch to the **Pending** tab. Observe the total reclaimable size banner. Tap an item's checkbox to deselect it. | Deselected item unchecks; total reclaimable size dynamically recalculates immediately across B, KB, MB, or GB. File is not deleted. |
+| **10** | **Cancellation Safety (Crucial)** | Tap **Delete Selected** > Tap **Proceed** on the LumaSpace warning modal. In the Android OS system prompt (`MediaStore.createDeleteRequest`), tap **Deny** or **Cancel**. | **Safety verified:** LumaSpace detects cancellation. The item remains in Samsung Gallery / Google Photos and stays in the Pending Deletion queue. No false success message is shown. |
+| **11** | **Safe Deletion Execution** | Tap **Delete Selected** > Tap **Proceed** > In the Android OS prompt, tap **Allow**. | The selected file is deleted from the device. Pending list clears and gallery updates immediately. |
+| **12** | **Theme Adaptation** | Go to **Settings** > **Theme**. Select each of the 7 themes (Google Light, Google Dark, Graphite, Sage, Sand, Rose, Ocean) and **System mode**. Restart app. | Palette shifts smoothly across all surfaces and components. Selected theme persists across app restarts. |
 
 ---
 
-## 📱 Physical Phone Testing & Verification Checklist
+## 💻 Developer Setup & Build Guide
 
-Follow this checklist to test LumaSpace on your physical Android phone:
+### Prerequisites
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) `^3.13.5` (Tested on `3.47.7`)
+- [Dart SDK](https://dart.dev/get-dart) `^3.13.5`
+- [Android SDK Platform](https://developer.android.com/studio) (API 34 or 35 with build-tools)
+- Physical Android phone with USB Debugging enabled, or an Android Studio emulator
 
-### Step 1: Enable Developer Options & USB Debugging
-1. On your phone, open **Settings** > **About Phone**.
-2. Tap **Build Number** 7 times until you see *"You are now a developer!"*.
-3. Go back to **Settings** > **System** (or **Additional Settings**) > **Developer Options**.
-4. Enable **USB Debugging**.
-5. Connect your phone to the computer via USB.
-6. When prompted on your phone screen (*"Allow USB debugging?"*), check **Always allow from this computer** and tap **Allow**.
-
-### Step 2: Confirm Device Detection
-Run in your terminal (no Android Studio required):
+### 1. Clone the Repository
 ```bash
-flutter devices
-# Or:
-adb devices
+git clone https://github.com/S-T-HARINI/LumaSpace.git
+cd LumaSpace
 ```
-*Your phone should appear in the device list as `device` (not `unauthorized` or `offline`).*
 
-### Step 3: Install & Launch LumaSpace
+### 2. Install Dependencies
 ```bash
-# Option A: Run directly in interactive debug mode with hot reload
+flutter pub get
+```
+
+### 3. Run Static Analysis & Automated Tests
+```bash
+flutter analyze
+flutter test
+```
+
+### 4. Run the Application
+```bash
+# Debug mode on connected Android device
 flutter run
 
-# Option B: Install the optimized release APK directly
+# Production release mode on connected Android device
 flutter run --release
-# Or via adb:
-adb install -r build/app/outputs/flutter-apk/app-release.apk
 ```
 
-### Step 4: Step-by-Step On-Device Verification
+### 5. Build Release APKs
+```bash
+# Build split-per-ABI APKs (recommended for smaller file sizes)
+flutter build apk --split-per-abi --release
 
-| # | Action | Verification |
-|:---:|:---|:---|
-| 1 | **Grant Media Permissions** | App requests photo/video access on first launch. Tap **Allow All**. Verify real device photos and videos load into the gallery. |
-| 2 | **Test Gallery Grid** | Scroll through your photos and videos. Verify smooth scrolling and lazy-loaded thumbnails. |
-| 3 | **Test Albums & Filters** | Tap the album selector in the app bar; choose *Camera* or *Screenshots*. Filter by *Videos* or *Large Files*. |
-| 4 | **Test Full-Screen Viewer** | Tap a photo: pinch to zoom, double-tap zoom. Tap a video: verify hardware playback and scrubbing. |
-| 5 | **Test Swipe Review** | Navigate to the **Review** tab: swipe a card right (Keep), swipe another card left (Mark for deletion). Notice the tactile lift and haptic feedback. |
-| 6 | **Test Multi-Step Undo** | Tap the Undo button twice in the Review tab. Verify items return to the review deck in reverse order. |
-| 7 | **Review Pending Deletions** | Switch to the **Pending** tab: verify pending count badge, item thumbnails, and total size calculation. |
-| 8 | **Test Deselection Safety** | Uncheck one item. Notice the total reclaimable size dynamically updates while the file remains untouched. |
-| 9 | **Test Native Deletion** | Tap **Delete Selected**. Verify the LumaSpace confirmation modal appears. Tap Proceed. Verify Android's native Scoped Storage dialog (`MediaStore.createDeleteRequest`) appears. |
-| 10 | **Test Cancellation Safety** | In the Android system dialog, tap **Deny/Cancel**. Verify LumaSpace detects the cancellation and preserves your files. |
-| 11 | **Test Complete Deletion** | Select an unwanted test photo, tap Delete, and tap **Allow** in Android's system dialog. Verify the file is safely deleted from your phone. |
-| 12 | **Test Theme Adaptation** | Go to **Settings** > **Theme** > Switch between all 7 themes (Google Light, Google Dark, Graphite, Sage, Sand, Rose, Ocean) and System mode. |
+# Or build a fat universal APK containing all architectures
+flutter build apk --release
+```
+
+### Compiled APK Output Locations
+
+| Artifact | Location | Target Architecture |
+|:---|:---|:---|
+| **ARM 64-bit APK** | `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` | Modern Android phones (e.g. Samsung Galaxy M36) |
+| **ARM 32-bit APK** | `build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk` | Older 32-bit Android phones |
+| **x86_64 APK** | `build/app/outputs/flutter-apk/app-x86_64-release.apk` | Android emulators |
+| **Universal APK** | `build/app/outputs/flutter-apk/app-release.apk` | Universal fat binary |
 
 ---
 
 ## 🌐 Web Browser Inspection & Mock Demo Mode
 
-LumaSpace also supports Flutter Web for rapid UI inspection and presentation:
+LumaSpace can also be inspected directly in a desktop browser using Flutter Web:
 
-### Run in Browser
 ```bash
 flutter run -d chrome
 ```
-*Or build the web distribution:*
-```bash
-flutter build web
-```
 
-### Mock Demo Mode
-Because web browsers run in a strict security sandbox without access to native Android media APIs (`photo_manager`), LumaSpace includes a built-in **Mock Demo Mode**:
-1. Open the app in a web browser.
-2. An informative banner alerts the reviewer that the browser environment uses the Mock Demo engine.
-3. Open **Settings** > tap **Mock Demo Data** to populate the app with 8 high-resolution simulated photos and videos (with memory-backed thumbnails).
-4. Review, swipe, undo, filter, sort, and inspect themes directly in Chrome/Edge without needing a physical phone connected.
+### Mock Demo Engine
+Because web browsers operate in a sandbox without access to native Android storage APIs (`photo_manager`), LumaSpace includes a built-in **Mock Demo Mode**:
+1. When launched in Chrome or Edge, an informative banner alerts the reviewer that the browser environment uses the Mock Demo engine.
+2. In **Settings**, tap **Mock Demo Data** to populate the application with 8 simulated photos and videos (with memory-backed thumbnails).
+3. Review, swipe, undo, filter, sort, group, and inspect themes directly in your browser without requiring a connected Android device.
 
 ---
 
-## ⚠️ Known Limitations & Platform Differences
+## 📌 Release & Submission Verification
 
-1. **Web Platform Limitation:** Browsers do not possess native mobile file system access or Android `MediaStore`. Full real-device media access and hardware deletion require an Android or iOS device. Browser mode uses the built-in Mock Demo engine.
-2. **Android Scoped Storage Deletion:** On Android 11+ (API 30+), deleting media items belonging to other applications triggers an OS-level confirmation modal required by Google security guidelines. This is intentional and guarantees user safety.
-3. **NDK Stripping Warning:** Debug builds may show an NDK `llvm-strip` warning if NDK build tools are partially installed on Windows; this does not affect functionality or release APK builds.
+The production Android release has been built, tested, and published to GitHub:
+- **Release Tag:** `v1.0.0`
+- **Release Page:** [LumaSpace v1.0.0 – GDG Tech Wildcard Entry](https://github.com/S-T-HARINI/LumaSpace/releases/tag/v1.0.0)
+- **Direct APK Download:** [app-arm64-v8a-release.apk](https://github.com/S-T-HARINI/LumaSpace/releases/download/v1.0.0/app-arm64-v8a-release.apk)
+- **Asset Size:** 174,016,762 bytes (166.0 MB)
+- **SHA-256 Digest:** `77d106d3ec2554178e5dc643966e1e78c15b723ac6bab5b4615c06c9cb110fe9`
+- **Verified Target Device:** Samsung Galaxy M36 (Android 16)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
