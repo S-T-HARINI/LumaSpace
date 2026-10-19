@@ -45,6 +45,11 @@ class StorageOverviewSheet extends StatelessWidget {
 
     final photoCount = allItems.where((i) => i.isImage).length;
     final videoCount = allItems.where((i) => i.isVideo).length;
+    final totalIndexedBytes = allItems.fold<int>(0, (sum, i) => sum + (i.size > 0 ? i.size : 0));
+    final unknownSizeCount = allItems.where((i) => i.size <= 0).length;
+    final formattedIndexedSize = totalIndexedBytes > 0
+        ? '~${_formatBytes(totalIndexedBytes)}${unknownSizeCount > 0 ? " (est.)" : ""}'
+        : (unknownSizeCount == allItems.length && allItems.isNotEmpty ? 'Metadata pending' : '0 B');
 
     return SafeArea(
       child: Padding(
@@ -58,7 +63,7 @@ class StorageOverviewSheet extends StatelessWidget {
                 Icon(Icons.pie_chart_outline_rounded, color: theme.colorScheme.primary),
                 const SizedBox(width: 10),
                 Text(
-                  'Media Library Overview',
+                  'Media Library Storage Overview',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -70,18 +75,18 @@ class StorageOverviewSheet extends StatelessWidget {
               context,
               icon: Icons.photo_library_rounded,
               label: 'Total Indexed Media',
-              value: '${allItems.length} files',
+              value: '${allItems.length} files ($formattedIndexedSize)',
             ),
             _buildStatTile(
               context,
               icon: Icons.image_rounded,
-              label: 'Photos',
+              label: 'Indexed Photos',
               value: '$photoCount images',
             ),
             _buildStatTile(
               context,
               icon: Icons.videocam_rounded,
-              label: 'Videos',
+              label: 'Indexed Videos',
               value: '$videoCount videos',
             ),
             _buildStatTile(
@@ -95,7 +100,14 @@ class StorageOverviewSheet extends StatelessWidget {
               context,
               icon: Icons.delete_outline_rounded,
               label: 'Marked for Deletion',
-              value: '$pendingCount items (~$formattedPendingSize)',
+              value: '$pendingCount items',
+              color: colors.deleteColor,
+            ),
+            _buildStatTile(
+              context,
+              icon: Icons.cleaning_services_rounded,
+              label: 'Potential Space Savings',
+              value: '~$formattedPendingSize',
               color: colors.deleteColor,
             ),
             const SizedBox(height: 12),
@@ -111,7 +123,7 @@ class StorageOverviewSheet extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Reclamation sizes are calculated from actual file metadata. Actual freed disk space may vary slightly based on file system block sizes.',
+                      'Sizes reflect photos and videos indexed from device storage, not total disk capacity. Space is safely reclaimed only after platform system confirmation.',
                       style: TextStyle(color: colors.subtleText, fontSize: 11.5, height: 1.35),
                     ),
                   ),
@@ -122,6 +134,16 @@ class StorageOverviewSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes <= 0) return '0 B';
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
 
   Widget _buildStatTile(

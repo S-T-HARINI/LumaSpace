@@ -10,6 +10,7 @@ import '../../providers/gallery_provider.dart';
 import '../../providers/review_provider.dart';
 import 'widgets/storage_overview_sheet.dart';
 import 'widgets/theme_selector_sheet.dart';
+import '../duplicates/duplicates_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -117,6 +118,49 @@ class SettingsScreen extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '${gallery.displayedItems.length} media indexed • ~$formattedSize pending',
+                        style: TextStyle(color: colors.subtleText, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: colors.subtleText),
+              ],
+            ),
+          ),
+          LiftContainer(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DuplicatesScreen()),
+              );
+            },
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            borderRadius: BorderRadius.circular(16),
+            color: theme.cardColor,
+            border: Border.all(color: colors.cardBorder),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.copy_rounded, color: theme.colorScheme.primary, size: 22),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Duplicate Media Review',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Find photos and videos with identical size & dimensions',
                         style: TextStyle(color: colors.subtleText, fontSize: 13),
                       ),
                     ],

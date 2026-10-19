@@ -103,5 +103,39 @@ void main() {
       expect(modified.title, original.title);
       expect(modified.size, 999999);
     });
+
+    test('Grouping by Month partitions items into calendar month headers', () {
+      galleryProvider.setGroupOption(GalleryGroupOption.byMonth);
+      final grouped = galleryProvider.groupedItems;
+
+      expect(grouped.containsKey('January 2026'), true);
+      expect(grouped.containsKey('January 2025'), true);
+      expect(grouped.containsKey('January 2023'), true);
+      expect(grouped['January 2026']!.first.id, 'item_new_large');
+    });
+
+    test('Grouping by Date partitions items into day headers', () {
+      galleryProvider.setGroupOption(GalleryGroupOption.byDate);
+      final grouped = galleryProvider.groupedItems;
+
+      expect(grouped.length, 3);
+      expect(grouped.keys.any((k) => k.contains('2026')), true);
+    });
+
+    test('Grouping with invalid date places items in Unknown Date', () {
+      final invalidItem = MediaItem(
+        id: 'invalid_date_item',
+        title: 'Corrupted Date Media',
+        type: MediaItemType.image,
+        size: 1024 * 100,
+        createDateTime: DateTime(1969, 12, 31),
+      );
+      galleryProvider.setMockItems([...sampleItems, invalidItem]);
+      galleryProvider.setGroupOption(GalleryGroupOption.byMonth);
+
+      final grouped = galleryProvider.groupedItems;
+      expect(grouped.containsKey('Unknown Date'), true);
+      expect(grouped['Unknown Date']!.first.id, 'invalid_date_item');
+    });
   });
 }

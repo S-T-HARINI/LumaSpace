@@ -12,6 +12,7 @@ import '../../providers/review_provider.dart';
 import '../viewer/full_screen_viewer.dart';
 import 'widgets/album_selector_sheet.dart';
 import 'widgets/gallery_filter_bar.dart';
+import 'widgets/gallery_group_sheet.dart';
 import 'widgets/gallery_sort_sheet.dart';
 import 'widgets/media_grid_tile.dart';
 
@@ -110,6 +111,36 @@ class _GalleryScreenState extends State<GalleryScreen> {
               },
             ),
           ),
+          // Grouping selection
+          LiftContainer(
+            onTap: () {
+              GalleryGroupSheet.show(
+                context,
+                currentGroup: gallery.groupOption,
+                onSelect: (group) => gallery.setGroupOption(group),
+              );
+            },
+            child: IconButton(
+              icon: Icon(
+                gallery.groupOption == GalleryGroupOption.none
+                    ? Icons.grid_view_rounded
+                    : (gallery.groupOption == GalleryGroupOption.byDate
+                        ? Icons.calendar_today_rounded
+                        : Icons.calendar_view_month_rounded),
+                color: gallery.groupOption != GalleryGroupOption.none
+                    ? context.theme.colorScheme.primary
+                    : null,
+              ),
+              tooltip: 'Group: ${gallery.groupOption.label}',
+              onPressed: () {
+                GalleryGroupSheet.show(
+                  context,
+                  currentGroup: gallery.groupOption,
+                  onSelect: (group) => gallery.setGroupOption(group),
+                );
+              },
+            ),
+          ),
           const SizedBox(width: 4),
         ],
       ),
@@ -201,31 +232,130 @@ class _GalleryScreenState extends State<GalleryScreen> {
         Expanded(
           child: RefreshIndicator(
             onRefresh: () => gallery.loadMedia(refresh: true),
-            child: GridView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(8),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 6,
-                mainAxisSpacing: 6,
-                childAspectRatio: 1.0,
+            child: gallery.groupOption == GalleryGroupOption.none
+                ? _buildContinuousGrid(context, gallery, review, crossAxisCount)
+                : _buildGroupedGrid(context, gallery, review, crossAxisCount),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContinuousGrid(
+    BuildContext context,
+    GalleryProvider gallery,
+    ReviewProvider review,
+    int crossAxisCount,
+  ) {
+    return GridView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(8),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 6,
+        mainAxisSpacing: 6,
+        childAspectRatio: 1.0,
+      ),
+      itemCount: gallery.displayedItems.length + (gallery.isLoadingMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == gallery.displayedItems.length) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(12),
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5),
               ),
-              itemCount: gallery.displayedItems.length + (gallery.isLoadingMore ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == gallery.displayedItems.length) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+          );
+        }
+
+        final item = gallery.displayedItems[index];
+        return MediaGridTile(
+          item: item,
+          isKept: review.isKept(item.id),
+          isPending: review.isPendingDelete(item.id),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => FullScreenViewer(
+                  items: gallery.displayedItems,
+                  initialIndex: index,
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildGroupedGrid(
+    BuildContext context,
+    GalleryProvider gallery,
+    ReviewProvider review,
+    int crossAxisCount,
+  ) {
+    final colors = context.appColors;
+    final grouped = gallery.groupedItems;
+    final slivers = <Widget>[];
+
+    for (final entry in grouped.entries) {
+      if (entry.key.isNotEmpty) {
+        slivers.add(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Row(
+                children: [
+                  Text(
+                    entry.key,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: colors.chipBackground,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: colors.cardBorder),
+                    ),
+                    child: Text(
+                      '${entry.value.length}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: colors.subtleText,
                       ),
                     ),
-                  );
-                }
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
 
-                final item = gallery.displayedItems[index];
+      slivers.add(
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          sliver: SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: 6,
+              mainAxisSpacing: 6,
+              childAspectRatio: 1.0,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final item = entry.value[index];
+                final globalIndex = gallery.displayedItems.indexOf(item);
                 return MediaGridTile(
                   item: item,
                   isKept: review.isKept(item.id),
@@ -236,17 +366,40 @@ class _GalleryScreenState extends State<GalleryScreen> {
                       MaterialPageRoute(
                         builder: (_) => FullScreenViewer(
                           items: gallery.displayedItems,
-                          initialIndex: index,
+                          initialIndex: globalIndex != -1 ? globalIndex : 0,
                         ),
                       ),
                     );
                   },
                 );
               },
+              childCount: entry.value.length,
             ),
           ),
         ),
-      ],
+      );
+    }
+
+    if (gallery.isLoadingMore) {
+      slivers.add(
+        const SliverToBoxAdapter(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: slivers,
     );
   }
 

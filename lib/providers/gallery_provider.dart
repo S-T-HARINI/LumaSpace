@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../data/models/media_item.dart';
 import '../data/services/media_service.dart';
 
@@ -11,6 +12,17 @@ enum GallerySortOption {
   final String label;
   final String description;
   const GallerySortOption(this.label, this.description);
+}
+
+enum GalleryGroupOption {
+  none('None', 'Continuous media grid', Icons.grid_view_rounded),
+  byDate('By Date', 'Group media by day', Icons.calendar_today_rounded),
+  byMonth('By Month', 'Group media by month', Icons.calendar_view_month_rounded);
+
+  final String label;
+  final String description;
+  final IconData icon;
+  const GalleryGroupOption(this.label, this.description, this.icon);
 }
 
 enum GalleryFilterOption {
@@ -42,6 +54,7 @@ class GalleryProvider extends ChangeNotifier {
 
   GallerySortOption _sortOption = GallerySortOption.dateDesc;
   GalleryFilterOption _filterOption = GalleryFilterOption.all;
+  GalleryGroupOption _groupOption = GalleryGroupOption.none;
   int _currentPage = 0;
   static const int _pageSize = 80;
 
@@ -55,6 +68,13 @@ class GalleryProvider extends ChangeNotifier {
   MediaAlbum? get selectedAlbum => _selectedAlbum;
   GallerySortOption get sortOption => _sortOption;
   GalleryFilterOption get filterOption => _filterOption;
+  GalleryGroupOption get groupOption => _groupOption;
+
+  void setGroupOption(GalleryGroupOption option) {
+    if (_groupOption == option) return;
+    _groupOption = option;
+    notifyListeners();
+  }
 
   List<MediaItem> get displayedItems {
     List<MediaItem> list = List.of(_rawItems);
@@ -91,6 +111,45 @@ class GalleryProvider extends ChangeNotifier {
     }
 
     return list;
+  }
+
+  Map<String, List<MediaItem>> get groupedItems {
+    final items = displayedItems;
+    if (_groupOption == GalleryGroupOption.none) {
+      return {'': items};
+    }
+
+    final Map<String, List<MediaItem>> groups = {};
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    for (final item in items) {
+      String key;
+      if (item.createDateTime.year <= 1970) {
+        key = 'Unknown Date';
+      } else if (_groupOption == GalleryGroupOption.byMonth) {
+        key = DateFormat('MMMM yyyy').format(item.createDateTime);
+      } else {
+        // By Date
+        final itemDate = DateTime(
+          item.createDateTime.year,
+          item.createDateTime.month,
+          item.createDateTime.day,
+        );
+        if (itemDate == today) {
+          key = 'Today • ${DateFormat('d MMMM yyyy').format(item.createDateTime)}';
+        } else if (itemDate == yesterday) {
+          key = 'Yesterday • ${DateFormat('d MMMM yyyy').format(item.createDateTime)}';
+        } else {
+          key = DateFormat('d MMMM yyyy').format(item.createDateTime);
+        }
+      }
+
+      groups.putIfAbsent(key, () => []).add(item);
+    }
+
+    return groups;
   }
 
   int get totalItemCount => _rawItems.length;
